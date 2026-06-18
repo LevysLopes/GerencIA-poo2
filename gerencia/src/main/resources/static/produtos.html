@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>GerencIA (Stoka) - Produtos</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .container { margin-bottom: 20px; border: 1px solid #ccc; padding: 10px; }
+        label { display: block; margin-top: 10px; }
+        input { margin-bottom: 10px; padding: 5px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th, td { border: 1px solid #aaa; padding: 8px; text-align: left; }
+    </style>
+</head>
+<body>
+
+    <h1>GerencIA (Stoka) - Gestão de Produtos</h1>
+
+    <div style="margin-bottom: 20px;">
+        <a href="dashboard.html" style="margin-right: 15px; text-decoration: none; color: blue;">⬅ Voltar ao Painel</a>
+        <a href="vendas.html" style="margin-right: 15px; text-decoration: none; color: green;">🛒 Registrar Venda</a>
+        <a href="relatorios.html" style="text-decoration: none; color: purple;">📊 Ver Relatórios</a>
+    </div>
+
+    <div class="container">
+        <h2>Cadastrar Novo Produto</h2>
+        <form id="formProduto">
+            <label>Nome do Produto:</label>
+            <input type="text" id="nome" required>
+
+            <label>Código de Barras:</label>
+            <input type="text" id="codigoBarras" required>
+
+            <label>Preço de Venda (R$):</label>
+            <input type="number" step="0.01" id="preco" required>
+
+            <label>Quantidade em Estoque:</label>
+            <input type="number" id="estoque" required>
+
+            <label>Nível Mínimo (Alerta):</label>
+            <input type="number" id="nivelMinimo" required>
+
+            <button type="submit">Salvar Produto</button>
+        </form>
+    </div>
+
+    <div class="container">
+        <h2>Lista de Produtos</h2>
+        <button onclick="carregarProdutos()">Atualizar Lista</button>
+        
+        <table id="tabelaProdutos">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>Cód. Barras</th>
+                    <th>Preço</th>
+                    <th>Estoque</th>
+                    <th>Mínimo</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function carregarProdutos() {
+            fetch('/produtos')
+                .then(response => response.json())
+                .then(produtos => {
+                    const tbody = document.querySelector('#tabelaProdutos tbody');
+                    tbody.innerHTML = '';
+                    
+                    produtos.forEach(produto => {
+                        const tr = document.createElement('tr');
+                        
+                        const id = (produto.id !== undefined && produto.id !== null) ? produto.id : '-';
+                        const nome = produto.nome || '-';
+                        const cod = produto.codigoBarras || '-';
+                        const preco = (produto.preco !== undefined && produto.preco !== null) ? `R$ ${produto.preco.toFixed(2)}` : 'R$ 0.00';
+                        const est = (produto.estoque !== undefined && produto.estoque !== null) ? produto.estoque : 'Vazio';
+                        const min = (produto.nivelMinimo !== undefined && produto.nivelMinimo !== null) ? produto.nivelMinimo : '-';
+
+                        tr.innerHTML = `
+                            <td>${id}</td>
+                            <td>${nome}</td>
+                            <td>${cod}</td>
+                            <td>${preco}</td>
+                            <td>${est}</td>
+                            <td>${min}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                })
+                .catch(error => console.error('Erro ao carregar produtos:', error));
+        }
+
+        document.getElementById('formProduto').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const novoProduto = {
+                nome: document.getElementById('nome').value,
+                codigoBarras: document.getElementById('codigoBarras').value,
+                preco: parseFloat(document.getElementById('preco').value),
+                estoque: parseInt(document.getElementById('estoque').value),
+                nivelMinimo: parseInt(document.getElementById('nivelMinimo').value)
+            };
+
+            fetch('/produtos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(novoProduto)
+            })
+            .then(response => {
+                if(response.ok) {
+                    alert('Produto salvo com sucesso!');
+                    document.getElementById('formProduto').reset();
+                    carregarProdutos();
+                } else {
+                    alert('Erro ao salvar o produto.');
+                }
+            })
+            .catch(error => console.error('Erro:', error));
+        });
+
+        carregarProdutos();
+    </script>
+</body>
+</html>
+

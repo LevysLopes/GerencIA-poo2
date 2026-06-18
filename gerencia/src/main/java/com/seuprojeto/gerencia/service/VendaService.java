@@ -1,10 +1,12 @@
 package com.seuprojeto.gerencia.service;
 
-import com.seuprojeto.gerencia.model.ItemVenda;
 import com.seuprojeto.gerencia.model.Venda;
+import com.seuprojeto.gerencia.model.Produto;
 import com.seuprojeto.gerencia.repository.VendaRepository;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
+import java.util.List;
+import java.util.Date;
 
 @Service
 public class VendaService {
@@ -17,22 +19,24 @@ public class VendaService {
         this.produtoService = produtoService;
     }
 
-    // Defesa SOLID (SRP - Princípio da Responsabilidade Única): A classe VendaService foca estritamente em registrar a venda[cite: 779, 780]. A complexidade de dar baixa no estoque é delegada ao ProdutoService.
+    public List<Venda> listarTodas() {
+        return vendaRepository.findAll();
+    }
+
     @Transactional
-    public Venda realizarVenda(Venda venda, java.util.List<ItemVenda> itens) {
-        double valorTotal = 0.0;
-        
-        for (ItemVenda item : itens) {
-            // Requisito: Baixa de estoque automática
-            produtoService.atualizarEstoque(item.getProduto().getId(), item.getQuantidadeVendida());
-            
-            // Calcula o subtotal do item
-            valorTotal += item.getQuantidadeVendida() * item.getPrecoUnitario();
-        }
-        
-        venda.setValorTotal(valorTotal);
-        venda.setDataVenda(new java.util.Date());
-        
+    public Venda realizarVenda(Venda venda) {
+        // Baixa de estoque automática
+        produtoService.atualizarEstoque(venda.getProdutoId(), venda.getQuantidade());
+       
+        // --- NOVO: Cálculo do Valor Total da Venda ---
+        Produto produto = produtoService.buscarPorId(venda.getProdutoId());
+        Double precoDoProduto = (produto.getPreco() != null) ? produto.getPreco() : 0.0;
+        venda.setValorTotal(precoDoProduto * venda.getQuantidade());
+       
+        // Registra a data
+        venda.setData(new Date());
+       
         return vendaRepository.save(venda);
     }
 }
+

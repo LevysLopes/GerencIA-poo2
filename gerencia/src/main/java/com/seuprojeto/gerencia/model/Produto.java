@@ -4,19 +4,12 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-// Defesa POO (Abstração): A classe foca apenas nos atributos essenciais para o contexto do sistema de mercearia (nome, preço, quantidade, nível mínimo), ignorando detalhes irrelevantes do mundo real.
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
 @Entity
-@Table(name = "produto")
+@NoArgsConstructor
+@AllArgsConstructor
 public class Produto {
 
     @Id
@@ -24,8 +17,29 @@ public class Produto {
     private Long id;
 
     private String nome;
-    private Double preco;
-    private Integer quantidade;
+    private String codigoBarras;
+    private Double preco; // <-- Novo campo para podermos calcular o valor
+    private Integer estoque;
     private Integer nivelMinimo;
-    private String foto;
+
+    // --- GETTERS E SETTERS MANUAIS ---
+    
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getNome() { return nome; }
+    public void setNome(String nome) { this.nome = nome; }
+
+    public String getCodigoBarras() { return codigoBarras; }
+    public void setCodigoBarras(String codigoBarras) { this.codigoBarras = codigoBarras; }
+
+    public Double getPreco() { return preco; }
+    public void setPreco(Double preco) { this.preco = preco; }
+
+    public Integer getEstoque() { return estoque; }
+    public void setEstoque(Integer estoque) { this.estoque = estoque; }
+
+    public Integer getNivelMinimo() { return nivelMinimo; }
+    public void setNivelMinimo(Integer nivelMinimo) { this.nivelMinimo = nivelMinimo; }
 }
+

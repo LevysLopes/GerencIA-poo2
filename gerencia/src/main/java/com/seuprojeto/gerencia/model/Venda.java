@@ -4,32 +4,69 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import java.util.Date;
+import org.hibernate.annotations.CreationTimestamp;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import java.util.Date;
 
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
 @Entity
-@Table(name = "venda")
+@NoArgsConstructor
+@AllArgsConstructor
 public class Venda {
-
+   
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Date dataVenda;
+    private Long produtoId;
+    private Integer quantidade;
+    
+    @CreationTimestamp
+    private Date data;
+    
     private Double valorTotal;
 
-    // Relacionamento do Banco de Dados: Várias vendas pertencem a um Comerciante (N para 1)
-    @ManyToOne 
-    @JoinColumn(name = "comerciante_id")
-    private Comerciante comerciante;
+    // --- GETTERS E SETTERS MANUAIS ---
+    // Isso garante que o Spring consiga ler o JSON do Front-end
+    
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getProdutoId() {
+        return produtoId;
+    }
+
+    public void setProdutoId(Long produtoId) {
+        this.produtoId = produtoId;
+    }
+
+    public Integer getQuantidade() {
+        return quantidade;
+    }
+
+    public void setQuantidade(Integer quantidade) {
+        this.quantidade = quantidade;
+    }
+
+    public Date getData() {
+        return data;
+    }
+
+    public void setData(Date data) {
+        this.data = data;
+    }
+
+    public Double getValorTotal() {
+        return valorTotal;
+    }
+
+    public void setValorTotal(Double valorTotal) {
+        this.valorTotal = valorTotal;
+    }
 }
+
