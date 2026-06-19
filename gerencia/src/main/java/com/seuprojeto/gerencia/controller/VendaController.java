@@ -3,6 +3,7 @@ package com.seuprojeto.gerencia.controller;
 import com.seuprojeto.gerencia.model.Venda;
 import com.seuprojeto.gerencia.service.VendaService;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -17,14 +18,11 @@ public class VendaController {
 
     @PostMapping
     public Venda registrar(@RequestBody Venda venda) {
-        // Simples e direto, sem listas vazias.
-        return vendaService.realizarVenda(venda);
+        return vendaService.realizarVenda(venda); 
     }
 
-    // Endpoint criado para o JavaScript conseguir puxar as Últimas Vendas
     @GetMapping
     public List<Venda> listar() {
         return vendaService.listarTodas();
     }
 }
-

@@ -54,7 +54,6 @@
     </div>
 
     <script>
-        // Função NOVA: Puxa os produtos do Java e coloca na lista para o usuário escolher
         function carregarListaDeProdutos() {
             fetch('/produtos')
                 .then(response => response.json())
@@ -63,14 +62,12 @@
                     select.innerHTML = '<option value="">-- Escolha um produto --</option>';
                     
                     produtos.forEach(p => {
-                        // Mostra o ID, Nome e quanto tem no estoque!
                         select.innerHTML += `<option value="${p.id}">ID: ${p.id} - ${p.nome} (Estoque: ${p.estoque})</option>`;
                     });
                 })
                 .catch(error => console.error('Erro ao carregar produtos:', error));
         }
 
-        // Função para carregar as vendas na tabela
         function carregarVendas() {
             fetch('/vendas')
                 .then(response => response.json())
@@ -82,10 +79,13 @@
                         const tr = document.createElement('tr');
                         const dataFormatada = venda.data ? new Date(venda.data).toLocaleString('pt-BR') : '-';
 
+                        const produtoId = (venda.itens && venda.itens.length > 0 && venda.itens[0].produto) ? venda.itens[0].produto.id : '-';
+                        const quantidade = (venda.itens && venda.itens.length > 0) ? venda.itens[0].quantidade : '-';
+
                         tr.innerHTML = `
                             <td>${venda.id || '-'}</td>
-                            <td>${venda.produtoId || '-'}</td>
-                            <td>${venda.quantidade || '-'}</td>
+                            <td>${produtoId}</td>
+                            <td>${quantidade}</td>
                             <td>${dataFormatada}</td>
                         `;
                         tbody.appendChild(tr);
@@ -98,8 +98,12 @@
             event.preventDefault();
            
             const novaVenda = {
-                produtoId: parseInt(document.getElementById('idProduto').value),
-                quantidade: parseInt(document.getElementById('quantidade').value)
+                itens: [
+                    {
+                        produto: { id: parseInt(document.getElementById('idProduto').value) },
+                        quantidade: parseInt(document.getElementById('quantidade').value)
+                    }
+                ]
             };
 
             fetch('/vendas', {
@@ -120,11 +124,8 @@
             .catch(error => console.error('Erro:', error));
         });
 
-        // Carrega tudo quando a página abre
         carregarListaDeProdutos();
         carregarVendas();
     </script>
 </body>
 </html>
-
-

@@ -2,62 +2,42 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>GerencIA (Stoka) - Painel de Controle</title>
+    <title>GerencIA - Painel</title>
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; background-color: #fcfcfc; }
-        
-        /* Menu Superior */
         .menu-superior { background-color: #eaeaea; padding: 12px; margin-bottom: 20px; border-radius: 4px; }
         .menu-superior a { text-decoration: none; color: #333; font-weight: bold; margin-right: 20px; }
         .menu-superior a:hover { color: #007bff; }
-        
-        /* Container Principal */
         .container-resumo { border: 1px solid #ccc; padding: 20px; background-color: #fff; border-radius: 4px; }
         .titulo-secao { margin-top: 0; font-size: 22px; margin-bottom: 20px; }
-        
-        /* Grid dos Cards */
-        .grid-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; max-width: 800px; }
-        
-        /* Estilo Base dos Cards */
+        .grid-cards { display: grid; grid-template-columns: repeat(2, minmax(180px, 1fr)); gap: 20px; max-width: 800px; }
         .card { border: 1px solid #ddd; padding: 20px; text-align: center; background-color: #f9f9f9; border-radius: 4px; }
         .card-titulo { font-weight: bold; font-size: 16px; margin-bottom: 10px; color: #222; }
         .card-numero { font-size: 24px; font-weight: bold; color: #444; }
-        
-        /* Card de Estoque Baixo (Destaque Vermelho) */
-        .card-alerta { border: 1px solid #ff9999; background-color: #fff8f8; grid-column: 1; }
-        .card-alerta .card-titulo { color: #ff0000; }
-        .card-alerta .card-numero { color: #ff0000; }
+        .card-alerta { border-color: #ff9999; background-color: #fff8f8; }
+        .card-alerta .card-titulo, .card-alerta .card-numero { color: #d00000; }
     </style>
 </head>
 <body>
+    <h1>GerencIA - Painel de Controle</h1>
 
-    <h1>GerencIA (Stoka) - Painel de Controle</h1>
-
-    <!-- Menu de Navegação Superior -->
     <div class="menu-superior">
-        <a href="produtos.html">📦 Produtos</a>
-        <a href="vendas.html">🛒 Vendas</a>
-        <a href="relatorios.html">📊 Relatórios</a>
+        <a href="produtos.html">Produtos</a>
+        <a href="vendas.html">Vendas</a>
+        <a href="relatorios.html">Relatorios</a>
     </div>
 
-    <!-- Bloco de Resumo do Sistema -->
     <div class="container-resumo">
         <h2 class="titulo-secao">Resumo do Sistema</h2>
-        
         <div class="grid-cards">
-            <!-- Card 1: Total de Produtos -->
             <div class="card">
                 <div class="card-titulo">Total de Produtos</div>
                 <div id="total-produtos" class="card-numero">Carregando...</div>
             </div>
-
-            <!-- Card 2: Vendas Hoje -->
             <div class="card">
                 <div class="card-titulo">Vendas Hoje</div>
                 <div id="vendas-hoje" class="card-numero">Carregando...</div>
             </div>
-
-            <!-- Card 3: Estoque Baixo -->
             <div class="card card-alerta">
                 <div class="card-titulo">Estoque Baixo</div>
                 <div id="estoque-baixo" class="card-numero">Carregando...</div>
@@ -66,62 +46,44 @@
     </div>
 
     <script>
+        function carregarJson(url) {
+            return fetch(url).then(function(res) {
+                if (!res.ok) throw new Error('Erro ' + res.status);
+                return res.json();
+            });
+        }
+
         function atualizarPainel() {
-            // 1. Busca os produtos e calcula o Total e o Estoque Baixo juntos (Evita rotas quebradas)
-            fetch('/produtos')
-                .then(function(res) { return res.json(); })
+            carregarJson('/produtos')
                 .then(function(produtos) {
-                    // Define o total de produtos cadastrados
                     document.getElementById('total-produtos').innerText = produtos.length;
-                    
-                    // Faz o cálculo do estoque baixo direto no Front-end com segurança
-                    var contadorAlerta = 0;
-                    produtos.forEach(function(p) {
-                        var estoqueAtual = (p.estoque !== null && p.estoque !== undefined) ? p.estoque : 0;
-                        var nivelMinimoExigido = (p.nivelMinimo !== null && p.nivelMinimo !== undefined) ? p.nivelMinimo : 0;
-                        
-                        // Se o estoque atual for menor ou igual ao mínimo, soma no alerta
-                        if (estoqueAtual <= nivelMinimoExigido) {
-                            contadorAlerta++;
-                        }
-                    });
-                    
-                    // Coloca o número final na tela
-                    document.getElementById('estoque-baixo').innerText = contadorAlerta;
                 })
-                .catch(function(err) { 
-                    console.error("Erro ao carregar produtos no painel:", err); 
+                .catch(function() {
                     document.getElementById('total-produtos').innerText = 'Erro';
+                });
+
+            carregarJson('/relatorios/alertas')
+                .then(function(alertas) {
+                    document.getElementById('estoque-baixo').innerText = alertas.length;
+                })
+                .catch(function() {
                     document.getElementById('estoque-baixo').innerText = 'Erro';
                 });
 
-            // 2. Busca o histórico de Vendas e filtra as de HOJE
-            fetch('/vendas')
-                .then(function(res) { return res.json(); })
+            carregarJson('/vendas')
                 .then(function(vendas) {
-                    var hojeStr = new Date().toDateString(); 
-                    var totalVendasHoje = 0;
-                    
-                    vendas.forEach(function(venda) {
-                        if (venda.data) {
-                            var dataVendaStr = new Date(venda.data).toDateString();
-                            if (dataVendaStr === hojeStr) {
-                                totalVendasHoje++;
-                            }
-                        }
-                    });
-                    
-                    document.getElementById('vendas-hoje').innerText = totalVendasHoje;
+                    var hoje = new Date().toDateString();
+                    var total = vendas.filter(function(venda) {
+                        return venda.data && new Date(venda.data).toDateString() === hoje;
+                    }).length;
+                    document.getElementById('vendas-hoje').innerText = total;
                 })
-                .catch(function(err) { 
-                    console.error("Erro ao carregar vendas no painel:", err); 
+                .catch(function() {
                     document.getElementById('vendas-hoje').innerText = 'Erro';
                 });
         }
 
-        // Executa assim que a página abre
         window.onload = atualizarPainel;
     </script>
 </body>
 </html>
-

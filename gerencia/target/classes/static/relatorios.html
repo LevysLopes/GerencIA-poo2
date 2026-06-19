@@ -17,7 +17,6 @@
         .ativa { display: block; }
     </style>
     
-    <!-- Biblioteca do PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
@@ -31,7 +30,6 @@
 
     <div class="container">
         <h2>Gerar Relatórios</h2>
-        <!-- Cliques direto nas funções garantem o funcionamento imediato -->
         <button onclick="mostrarRelatorio('estoque')" class="btn-relatorio">Relatório de Estoque Atual</button>
         <button onclick="mostrarRelatorio('vendas')" class="btn-relatorio">Relatório de Vendas</button>
         <button onclick="mostrarRelatorio('alertas')" class="btn-relatorio" style="color: red;">Produtos em Alerta (Falta)</button>
@@ -40,7 +38,6 @@
 
     <div id="conteudo-pdf">
         
-        <!-- 1. RELATÓRIO DE ESTOQUE -->
         <div id="relatorio-estoque" class="container secao-relatorio ativa">
             <h2>Estoque Atual</h2>
             <table id="tabelaEstoque">
@@ -57,7 +54,6 @@
             </table>
         </div>
 
-        <!-- 2. RELATÓRIO DE VENDAS -->
         <div id="relatorio-vendas" class="container secao-relatorio">
             <h2>Histórico de Vendas</h2>
             <table id="tabelaVendas">
@@ -73,7 +69,6 @@
             </table>
         </div>
 
-        <!-- 3. RELATÓRIO DE ALERTAS -->
         <div id="relatorio-alertas" class="container secao-relatorio">
             <h2 style="color: red;">Produtos com Estoque Baixo</h2>
             <table id="tabelaAlertas">
@@ -94,7 +89,6 @@
     <script>
         var relatorioAtual = 'Estoque_Atual';
 
-        // Alterna as telas visualmente sem depender do sucesso do banco de dados
         function mostrarRelatorio(tipo) {
             try {
                 var secoes = document.querySelectorAll('.secao-relatorio');
@@ -147,9 +141,13 @@
                         var valorTotal = (venda.valorTotal !== null && venda.valorTotal !== undefined) 
                             ? 'R$ ' + venda.valorTotal.toFixed(2) : 'R$ 0.00';
 
+                        // Extração segura dos dados da nova modelagem de ItemVenda
+                        var produtoId = (venda.itens && venda.itens.length > 0 && venda.itens[0].produto) ? venda.itens[0].produto.id : '-';
+                        var quantidade = (venda.itens && venda.itens.length > 0) ? venda.itens[0].quantidade : '-';
+
                         tr.innerHTML = '<td>' + dataFormatada + '</td>' +
-                                       '<td>' + (venda.produtoId || '-') + '</td>' +
-                                       '<td>' + (venda.quantidade || '-') + '</td>' +
+                                       '<td>' + produtoId + '</td>' +
+                                       '<td>' + quantidade + '</td>' +
                                        '<td>' + valorTotal + '</td>';
                         tbody.appendChild(tr);
                     });
@@ -214,7 +212,6 @@
                 });
         }
 
-        // Executa a carga inicial de forma segura
         try {
             carregarEstoque();
         } catch (e) {
@@ -223,4 +220,3 @@
     </script>
 </body>
 </html>
-

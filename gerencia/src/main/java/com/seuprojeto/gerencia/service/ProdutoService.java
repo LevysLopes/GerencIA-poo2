@@ -16,7 +16,13 @@ public class ProdutoService {
     }
 
     public Produto salvarProduto(Produto produto) {
-        return produtoRepository.save(produto);
+        if (produto.getEstoque() != null && produto.getEstoque() < 0) {
+            throw new RuntimeException("O estoque inicial não pode ser negativo.");
+        }
+        if (produto.getPreco() != null && produto.getPreco() < 0) {
+            throw new RuntimeException("O preço não pode ser negativo.");
+        }
+        return produtoRepository.save(produto); 
     }
 
     public List<Produto> listarTodos() {
@@ -26,26 +32,24 @@ public class ProdutoService {
     public List<Produto> verificarEstoqueBaixo() {
         List<Produto> todosProdutos = produtoRepository.findAll();
         return todosProdutos.stream()
-                .filter(p -> p.getEstoque() <= p.getNivelMinimo())
+                .filter(p -> p.getEstoque() != null && p.getNivelMinimo() != null && p.getEstoque() <= p.getNivelMinimo())
                 .collect(Collectors.toList());
     }
 
-    public void atualizarEstoque(Long produtoId, int quantidadeVendida) {
-        Produto produto = produtoRepository.findById(produtoId)
-                .orElseThrow(() -> new RuntimeException("Produto não encontrado no sistema."));
-       
-        if (produto.getEstoque() < quantidadeVendida) {
+    public void atualizarEstoque(Long id, Integer quantidadeVendida) {
+        if (quantidadeVendida == null || quantidadeVendida <= 0) {
+            throw new RuntimeException("Quantidade de venda inválida.");
+        }
+        Produto produto = buscarPorId(id);
+        if (produto.getEstoque() == null || produto.getEstoque() < quantidadeVendida) {
             throw new RuntimeException("Estoque insuficiente para o produto: " + produto.getNome());
         }
-       
         produto.setEstoque(produto.getEstoque() - quantidadeVendida);
         produtoRepository.save(produto);
     }
 
-    // --- NOVO: Permite ao VendaService puxar o Produto pelo ID para ler o preço ---
     public Produto buscarPorId(Long id) {
         return produtoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Produto não encontrado."));
     }
 }
-

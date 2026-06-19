@@ -1,5 +1,6 @@
 package com.seuprojeto.gerencia.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -16,14 +17,45 @@ public class Produto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String nome;
+
+    @Column(unique = true)
     private String codigoBarras;
-    private Double preco; // <-- Novo campo para podermos calcular o valor
+
+    @Column(nullable = false)
+    private Double preco;
+
+    @Column(nullable = false)
     private Integer estoque;
+
+    @Column(nullable = false)
     private Integer nivelMinimo;
 
-    // --- GETTERS E SETTERS MANUAIS ---
-    
+    public boolean estaComEstoqueBaixo() {
+        int estoqueAtual = estoque != null ? estoque : 0;
+        int minimo = nivelMinimo != null ? nivelMinimo : 0;
+        return estoqueAtual <= minimo;
+    }
+
+    public void baixarEstoque(int quantidadeVendida) {
+        if (quantidadeVendida <= 0) {
+            throw new IllegalArgumentException("A quantidade vendida deve ser maior que zero.");
+        }
+
+        int estoqueAtual = estoque != null ? estoque : 0;
+        if (estoqueAtual < quantidadeVendida) {
+            throw new IllegalArgumentException("Estoque insuficiente para o produto: " + nome);
+        }
+
+        estoque = estoqueAtual - quantidadeVendida;
+    }
+
+    public Double calcularValorTotal(int quantidadeVendida) {
+        double precoAtual = preco != null ? preco : 0.0;
+        return precoAtual * quantidadeVendida;
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -42,4 +74,3 @@ public class Produto {
     public Integer getNivelMinimo() { return nivelMinimo; }
     public void setNivelMinimo(Integer nivelMinimo) { this.nivelMinimo = nivelMinimo; }
 }
-

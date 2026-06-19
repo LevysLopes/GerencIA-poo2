@@ -1,15 +1,35 @@
 package com.seuprojeto.gerencia.service;
 
 import com.seuprojeto.gerencia.model.GeradorRelatorio;
+import com.seuprojeto.gerencia.model.Venda;
 import org.springframework.stereotype.Service;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-// Defesa POO (Polimorfismo e SOLID - OCP): Ao implementar a interface GeradorRelatorio, esta classe assume uma forma específica. Podemos adicionar relatórios infinitos no futuro sem alterar a estrutura base do sistema.
 @Service
 public class RelatorioVendasService implements GeradorRelatorio {
 
+    private final VendaService vendaService;
+
+    public RelatorioVendasService(VendaService vendaService) {
+        this.vendaService = vendaService;
+    }
+
     @Override
-    public void gerarRelatorio() {
-        // Aqui entraria a biblioteca de geração de PDF, por exemplo.
-        System.out.println("Gerando relatório de VENDAS para o painel do comerciante...");
+    public String getTipoRelatorio() {
+        return "VENDAS";
+    }
+
+    @Override
+    public Map<String, Object> gerarDados() {
+        List<Venda> vendas = vendaService.listarTodas();
+        double faturamentoTotal = vendas.stream().mapToDouble(Venda::getValorTotal).sum();
+
+        Map<String, Object> dados = new HashMap<>();
+        dados.put("totalVendasRealizadas", vendas.size());
+        dados.put("faturamentoTotal", faturamentoTotal);
+        
+        return dados;
     }
 }

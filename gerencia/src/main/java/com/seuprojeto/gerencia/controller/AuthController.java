@@ -1,33 +1,36 @@
 package com.seuprojeto.gerencia.controller;
 
-import com.seuprojeto.gerencia.model.Comerciante;
-import com.seuprojeto.gerencia.repository.ComercianteRepository;
+import com.seuprojeto.gerencia.dto.LoginRequest;
+import com.seuprojeto.gerencia.dto.RegistroRequest;
+import com.seuprojeto.gerencia.service.AuthService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 @RestController
 public class AuthController {
 
-    private final ComercianteRepository repository;
+    private final AuthService authService;
 
-    // Construtor para injeção de dependência (melhor prática)
-    public AuthController(ComercianteRepository repository) {
-        this.repository = repository;
+    public AuthController(AuthService authService) {
+        this.authService = authService;
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Comerciante loginData) {
-        Comerciante c = repository.findByEmailAndSenha(loginData.getEmail(), loginData.getSenha());
-        if (c != null) {
-            return ResponseEntity.ok().build();
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginData) {
+        if (authService.autenticar(loginData)) {
+            return ResponseEntity.ok(Map.of("mensagem", "Login realizado com sucesso."));
         }
-        return ResponseEntity.status(401).body("Credenciais inválidas");
+        return ResponseEntity.status(401).body(Map.of("erro", "Credenciais invalidas."));
     }
 
     @PostMapping("/registrar")
-    public ResponseEntity<?> registrar(@RequestBody Comerciante novo) {
-        // Dica: Aqui você poderia verificar se o e-mail já existe antes de salvar
-        repository.save(novo);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> registrar(@Valid @RequestBody RegistroRequest novo) {
+        authService.registrar(novo);
+        return ResponseEntity.ok(Map.of("mensagem", "Usuario registrado com sucesso."));
     }
 }

@@ -82,10 +82,14 @@
                         const tr = document.createElement('tr');
                         const dataFormatada = venda.data ? new Date(venda.data).toLocaleString('pt-BR') : '-';
 
+                        // Como a venda agora tem múltiplos itens (ItemVenda), extraímos os dados do primeiro item para exibir na tabela
+                        const produtoId = (venda.itens && venda.itens.length > 0 && venda.itens[0].produto) ? venda.itens[0].produto.id : '-';
+                        const quantidade = (venda.itens && venda.itens.length > 0) ? venda.itens[0].quantidade : '-';
+
                         tr.innerHTML = `
                             <td>${venda.id || '-'}</td>
-                            <td>${venda.produtoId || '-'}</td>
-                            <td>${venda.quantidade || '-'}</td>
+                            <td>${produtoId}</td>
+                            <td>${quantidade}</td>
                             <td>${dataFormatada}</td>
                         `;
                         tbody.appendChild(tr);
@@ -97,9 +101,14 @@
         document.getElementById('formVenda').addEventListener('submit', function(event) {
             event.preventDefault();
            
+            // NOVO FORMATO: Adaptado para a nova modelagem OO com a lista de ItemVenda
             const novaVenda = {
-                produtoId: parseInt(document.getElementById('idProduto').value),
-                quantidade: parseInt(document.getElementById('quantidade').value)
+                itens: [
+                    {
+                        produto: { id: parseInt(document.getElementById('idProduto').value) },
+                        quantidade: parseInt(document.getElementById('quantidade').value)
+                    }
+                ]
             };
 
             fetch('/vendas', {
@@ -126,5 +135,3 @@
     </script>
 </body>
 </html>
-
-

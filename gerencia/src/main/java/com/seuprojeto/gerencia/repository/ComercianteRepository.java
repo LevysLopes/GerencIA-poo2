@@ -4,8 +4,12 @@ import com.seuprojeto.gerencia.model.Comerciante;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface ComercianteRepository extends JpaRepository<Comerciante, Long> {
-    // O Spring Data JPA cria a consulta automaticamente baseada no nome do método
-    Comerciante findByEmailAndSenha(String email, String senha);
+
+    Optional<Comerciante> findByEmail(String email);
+
+    boolean existsByEmail(String email);
 }
